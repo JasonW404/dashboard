@@ -72,9 +72,9 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
         </p>
       </motion.div>
 
-      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-full">
         {/* Left Column: Stats Blocks */}
-        <motion.div variants={item} className="md:col-span-4 flex flex-col gap-4">
+        <motion.div variants={item} className="md:col-span-4 flex flex-col gap-4 h-full">
           <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-default">
             <CardContent className="flex flex-row items-center justify-between p-6 h-full">
               <div className="flex flex-row items-center gap-4">
@@ -119,19 +119,23 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
         </motion.div>
 
         {/* Right Column: GitHub Contributions Graph */}
-        <motion.div variants={item} className="md:col-span-8">
-          <Card className="h-full hover:shadow-lg transition-shadow duration-200">
+        <motion.div variants={item} className="md:col-span-8 h-full">
+          <Card className="h-full hover:shadow-lg transition-shadow duration-200 flex flex-col">
             <CardHeader>
               <CardTitle>Contributions</CardTitle>
             </CardHeader>
-            <CardContent className="flex justify-center items-center py-4 overflow-x-auto h-[calc(100%-4rem)]">
-              <GitHubCalendar 
-                username={settings.githubUsername}
-                colorScheme="light"
-                fontSize={12}
-                blockSize={12}
-                blockMargin={4}
-              />
+            <CardContent className="flex-1 flex justify-center items-center py-4 overflow-hidden min-h-[160px]">
+              <div className="w-full h-full flex items-center justify-center overflow-x-auto custom-scrollbar">
+                <div className="min-w-fit">
+                  <GitHubCalendar 
+                    username={settings.githubUsername}
+                    colorScheme="light"
+                    fontSize={12}
+                    blockSize={12}
+                    blockMargin={4}
+                  />
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
