@@ -71,70 +71,60 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
         </p>
       </motion.div>
 
-      {/* GitHub Contributions Graph */}
-      <motion.div variants={item}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Contributions</CardTitle>
-          </CardHeader>
-          <CardContent className="flex justify-center py-4 overflow-x-auto">
-            <GitHubCalendar 
-              username={settings.githubUsername}
-              colorScheme="light"
-              fontSize={12}
-              blockSize={12}
-              blockMargin={4}
-            />
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* Compact Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <motion.div variants={item}>
-          <Card className="h-full">
-            <CardContent className="flex flex-row items-center justify-between p-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+        {/* Left Column: Stats Blocks */}
+        <motion.div variants={item} className="md:col-span-4 flex flex-col gap-4">
+          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+            <CardContent className="flex flex-row items-center justify-between p-6 h-full">
               <div className="flex flex-row items-center gap-4">
                 <GitBranch className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm font-medium">Total Repositories</span>
               </div>
-              <div className="flex flex-col items-end">
-                 <div className="text-2xl font-bold leading-none">
-                  {isLoading ? "..." : userStats?.repos}
-                </div>
+              <div className="text-2xl font-bold leading-none">
+                {isLoading ? "..." : userStats?.repos}
               </div>
             </CardContent>
           </Card>
-        </motion.div>
-        
-        <motion.div variants={item}>
-           <Card className="h-full">
-            <CardContent className="flex flex-row items-center justify-between p-6">
+          
+          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+            <CardContent className="flex flex-row items-center justify-between p-6 h-full">
               <div className="flex flex-row items-center gap-4">
                 <Activity className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm font-medium">Recent Activity</span>
               </div>
-              <div className="flex flex-col items-end">
-                <div className="text-2xl font-bold leading-none">
-                  {isLoading ? "..." : userStats?.commits}
-                </div>
+              <div className="text-2xl font-bold leading-none">
+                {isLoading ? "..." : userStats?.commits}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+            <CardContent className="flex flex-row items-center justify-between p-6 h-full">
+              <div className="flex flex-row items-center gap-4">
+                <Star className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Tracked Stars</span>
+              </div>
+              <div className="text-2xl font-bold leading-none">
+                {isLoading ? "..." : totalStars}
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        <motion.div variants={item}>
-          <Card className="h-full">
-            <CardContent className="flex flex-row items-center justify-between p-6">
-              <div className="flex flex-row items-center gap-4">
-                <Star className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm font-medium">Tracked Stars</span>
-              </div>
-              <div className="flex flex-col items-end">
-                <div className="text-2xl font-bold leading-none">
-                  {isLoading ? "..." : totalStars}
-                </div>
-              </div>
+        {/* Right Column: GitHub Contributions Graph */}
+        <motion.div variants={item} className="md:col-span-8">
+          <Card className="h-full hover:shadow-lg transition-shadow duration-200">
+            <CardHeader>
+              <CardTitle>Contributions</CardTitle>
+            </CardHeader>
+            <CardContent className="flex justify-center items-center py-4 overflow-x-auto h-[calc(100%-4rem)]">
+              <GitHubCalendar 
+                username={settings.githubUsername}
+                colorScheme="light"
+                fontSize={12}
+                blockSize={12}
+                blockMargin={4}
+              />
             </CardContent>
           </Card>
         </motion.div>
@@ -145,7 +135,7 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
         <h2 className="text-xl font-semibold tracking-tight">Tracked Repositories</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {repoStats?.map((repo) => (
-            <Card key={`${repo.owner}/${repo.name}`} className="hover:shadow-md transition-shadow">
+            <Card key={`${repo.owner}/${repo.name}`} className="hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
               <CardHeader className="pb-2">
                 <CardTitle className="text-base font-medium">
                   <a 
@@ -188,7 +178,7 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
       <div className="grid gap-4 md:grid-cols-2">
         {/* Todo List Preview */}
         <motion.div variants={item}>
-          <Card className="h-full">
+          <Card className="h-full hover:shadow-md transition-shadow duration-200">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Quick Todos</CardTitle>
               <Link href="/todos">
@@ -203,15 +193,13 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
                   pendingTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                      onClick={() => toggleTodo(todo.id)}
                     >
-                      <button
-                        onClick={() => toggleTodo(todo.id)}
-                        className="text-muted-foreground hover:text-primary transition-colors"
-                      >
+                      <button className="text-muted-foreground group-hover:text-primary transition-colors">
                         <Circle className="h-4 w-4" />
                       </button>
-                      <span className="text-sm truncate">{todo.content}</span>
+                      <span className="text-sm truncate group-hover:text-foreground transition-colors">{todo.content}</span>
                     </div>
                   ))
                 ) : (
@@ -226,7 +214,7 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
 
         {/* Blog Preview */}
         <motion.div variants={item}>
-          <Card className="h-full">
+          <Card className="h-full hover:shadow-md transition-shadow duration-200">
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Latest Posts</CardTitle>
               <Link href="/blog">
