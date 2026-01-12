@@ -89,53 +89,102 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
         </Card>
       </motion.div>
 
+      {/* Compact Stats Grid */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <motion.div variants={item}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Repositories</CardTitle>
-              <GitBranch className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? "..." : userStats?.repos}
+          <Card className="h-full">
+            <CardContent className="flex flex-row items-center justify-between p-6">
+              <div className="flex flex-row items-center gap-4">
+                <GitBranch className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Total Repositories</span>
               </div>
-              <p className="text-xs text-muted-foreground">Public repositories</p>
+              <div className="flex flex-col items-end">
+                 <div className="text-2xl font-bold leading-none">
+                  {isLoading ? "..." : userStats?.repos}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
         
         <motion.div variants={item}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? "..." : userStats?.commits}
+           <Card className="h-full">
+            <CardContent className="flex flex-row items-center justify-between p-6">
+              <div className="flex flex-row items-center gap-4">
+                <Activity className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Recent Activity</span>
               </div>
-              <p className="text-xs text-muted-foreground">Recent push events</p>
+              <div className="flex flex-col items-end">
+                <div className="text-2xl font-bold leading-none">
+                  {isLoading ? "..." : userStats?.commits}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
 
         <motion.div variants={item}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tracked Stars</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {isLoading ? "..." : totalStars}
+          <Card className="h-full">
+            <CardContent className="flex flex-row items-center justify-between p-6">
+              <div className="flex flex-row items-center gap-4">
+                <Star className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm font-medium">Tracked Stars</span>
               </div>
-              <p className="text-xs text-muted-foreground">Across {repoStats?.length || 0} tracked repos</p>
+              <div className="flex flex-col items-end">
+                <div className="text-2xl font-bold leading-none">
+                  {isLoading ? "..." : totalStars}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </motion.div>
       </div>
 
+      {/* Tracked Repositories */}
+      <motion.div variants={item} className="space-y-4">
+        <h2 className="text-xl font-semibold tracking-tight">Tracked Repositories</h2>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {repoStats?.map((repo) => (
+            <Card key={`${repo.owner}/${repo.name}`} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium">
+                  <a 
+                    href={repo.url} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="hover:underline flex items-center gap-2"
+                  >
+                    {repo.owner}/{repo.name}
+                  </a>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex gap-4 text-sm text-muted-foreground">
+                  <div className="flex items-center gap-1">
+                    <Star className="h-4 w-4" />
+                    {repo.stars}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <GitFork className="h-4 w-4" />
+                    {repo.forks}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <AlertCircle className="h-4 w-4" />
+                    {repo.openIssues}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+          {(!repoStats || repoStats.length === 0) && (
+            <div className="col-span-full py-8 text-center text-muted-foreground">
+              No repositories tracked yet. Add them in settings.
+            </div>
+          )}
+        </div>
+      </motion.div>
+
+      {/* Content Previews: Todos and Blog */}
       <div className="grid gap-4 md:grid-cols-2">
         {/* Todo List Preview */}
         <motion.div variants={item}>
@@ -216,49 +265,6 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
           </Card>
         </motion.div>
       </div>
-
-      <motion.div variants={item} className="space-y-4">
-        <h2 className="text-xl font-semibold tracking-tight">Tracked Repositories</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {repoStats?.map((repo) => (
-            <Card key={`${repo.owner}/${repo.name}`} className="hover:shadow-md transition-shadow">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-base font-medium">
-                  <a 
-                    href={repo.url} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="hover:underline flex items-center gap-2"
-                  >
-                    {repo.owner}/{repo.name}
-                  </a>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex gap-4 text-sm text-muted-foreground">
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4" />
-                    {repo.stars}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <GitFork className="h-4 w-4" />
-                    {repo.forks}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <AlertCircle className="h-4 w-4" />
-                    {repo.openIssues}
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-          {(!repoStats || repoStats.length === 0) && (
-            <div className="col-span-full py-8 text-center text-muted-foreground">
-              No repositories tracked yet. Add them in settings.
-            </div>
-          )}
-        </div>
-      </motion.div>
     </motion.div>
   );
 }
