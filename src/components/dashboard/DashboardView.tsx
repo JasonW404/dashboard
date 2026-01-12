@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { GitHubCalendar } from "react-github-calendar";
 import { BlogPost } from "@/types";
-import { Circle } from "lucide-react";
+import { Circle, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 interface DashboardViewProps {
   initialPosts: BlogPost[];
@@ -74,10 +75,12 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left Column: Stats Blocks */}
         <motion.div variants={item} className="md:col-span-4 flex flex-col gap-4">
-          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-default">
             <CardContent className="flex flex-row items-center justify-between p-6 h-full">
               <div className="flex flex-row items-center gap-4">
-                <GitBranch className="h-5 w-5 text-muted-foreground" />
+                <div className="p-2 bg-primary/10 rounded-full text-primary">
+                  <GitBranch className="h-5 w-5" />
+                </div>
                 <span className="text-sm font-medium">Total Repositories</span>
               </div>
               <div className="text-2xl font-bold leading-none">
@@ -86,10 +89,12 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
             </CardContent>
           </Card>
           
-          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-default">
             <CardContent className="flex flex-row items-center justify-between p-6 h-full">
               <div className="flex flex-row items-center gap-4">
-                <Activity className="h-5 w-5 text-muted-foreground" />
+                <div className="p-2 bg-primary/10 rounded-full text-primary">
+                  <Activity className="h-5 w-5" />
+                </div>
                 <span className="text-sm font-medium">Recent Activity</span>
               </div>
               <div className="text-2xl font-bold leading-none">
@@ -98,10 +103,12 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
             </CardContent>
           </Card>
 
-          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200">
+          <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-default">
             <CardContent className="flex flex-row items-center justify-between p-6 h-full">
               <div className="flex flex-row items-center gap-4">
-                <Star className="h-5 w-5 text-muted-foreground" />
+                <div className="p-2 bg-primary/10 rounded-full text-primary">
+                  <Star className="h-5 w-5" />
+                </div>
                 <span className="text-sm font-medium">Tracked Stars</span>
               </div>
               <div className="text-2xl font-bold leading-none">
@@ -142,16 +149,17 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
                     href={repo.url} 
                     target="_blank" 
                     rel="noreferrer"
-                    className="hover:underline flex items-center gap-2"
+                    className="hover:text-primary transition-colors flex items-center gap-2 group"
                   >
                     {repo.owner}/{repo.name}
+                    <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
                   </a>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="flex gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4" />
+                    <Star className="h-4 w-4 text-yellow-500" />
                     {repo.stars}
                   </div>
                   <div className="flex items-center gap-1">
@@ -182,8 +190,8 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Quick Todos</CardTitle>
               <Link href="/todos">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  View All <ArrowRight className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="gap-2 group">
+                  View All <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </CardHeader>
@@ -193,11 +201,12 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
                   pendingTodos.map((todo) => (
                     <div
                       key={todo.id}
-                      className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group border border-transparent hover:border-border"
                       onClick={() => toggleTodo(todo.id)}
                     >
-                      <button className="text-muted-foreground group-hover:text-primary transition-colors">
-                        <Circle className="h-4 w-4" />
+                      <button className="text-muted-foreground group-hover:text-primary transition-colors relative">
+                        <Circle className="h-5 w-5 transition-all group-hover:scale-0 group-hover:opacity-0" />
+                        <CheckCircle className="h-5 w-5 absolute inset-0 scale-0 opacity-0 transition-all text-primary group-hover:scale-100 group-hover:opacity-100" />
                       </button>
                       <span className="text-sm truncate group-hover:text-foreground transition-colors">{todo.content}</span>
                     </div>
@@ -218,8 +227,8 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Latest Posts</CardTitle>
               <Link href="/blog">
-                <Button variant="ghost" size="sm" className="gap-2">
-                  Read Blog <ArrowRight className="h-4 w-4" />
+                <Button variant="ghost" size="sm" className="gap-2 group">
+                  Read Blog <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
             </CardHeader>
@@ -228,7 +237,7 @@ export default function DashboardView({ initialPosts }: DashboardViewProps) {
                 {recentPosts.length > 0 ? (
                   recentPosts.map((post) => (
                     <Link key={post.slug} href={`/blog/${post.slug}`}>
-                      <div className="group space-y-1 cursor-pointer hover:bg-muted/50 p-2 -mx-2 rounded-lg transition-colors">
+                      <div className="group space-y-1 cursor-pointer hover:bg-muted/50 p-3 -mx-2 rounded-lg transition-colors border border-transparent hover:border-border">
                         <div className="flex items-center justify-between">
                           <span className="font-medium group-hover:text-primary transition-colors">
                             {post.title}
