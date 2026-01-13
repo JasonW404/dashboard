@@ -2,10 +2,21 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { getSortedPostsData } from "@/lib/blog/service";
+import { getPosts } from "@/actions/posts";
+import { BlogPost } from "@/types";
 
-export default function BlogPage() {
-  const posts = getSortedPostsData();
+export default async function BlogPage() {
+  // Fetch posts directly from DB via Server Action
+  const postsData = await getPosts();
+  // Ensure strict typing matching BlogPost interface
+  const posts: BlogPost[] = postsData.map((p: any) => ({
+    slug: p.slug,
+    title: p.title,
+    date: p.date,
+    excerpt: p.excerpt,
+    content: p.content,
+    tags: p.tags
+  }));
 
   return (
     <div className="space-y-8">
@@ -47,7 +58,7 @@ export default function BlogPage() {
         ))}
         {posts.length === 0 && (
           <div className="col-span-full py-12 text-center text-muted-foreground">
-            No blog posts found. Add some markdown files to content/blog.
+            No blog posts found. Check back later!
           </div>
         )}
       </div>

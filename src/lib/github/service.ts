@@ -14,9 +14,26 @@ export class GitHubService {
     }
 
     try {
-      const { data: user } = await this.octokit.rest.users.getByUsername({
-        username,
-      });
+      // Get authenticated user info if token is present and username matches
+      let user;
+      try {
+        const { data: authUser } = await this.octokit.rest.users.getAuthenticated();
+        if (authUser.login === username) {
+          user = authUser;
+        } else {
+          // Fallback to public user info
+          const { data: publicUser } = await this.octokit.rest.users.getByUsername({
+            username,
+          });
+          user = publicUser;
+        }
+      } catch {
+        // Fallback if not authenticated or error
+        const { data: publicUser } = await this.octokit.rest.users.getByUsername({
+          username,
+        });
+        user = publicUser;
+      }
 
       // Get events for commit count (simplified estimation)
       const { data: events } = await this.octokit.rest.activity.listPublicEventsForUser({
@@ -29,8 +46,13 @@ export class GitHubService {
         return acc + (event.payload?.commits?.length || 0);
       }, 0);
 
+      // Use total_private_repos if available (authenticated user), otherwise just public_repos
+      const totalRepos = (user as any).total_private_repos !== undefined 
+        ? user.public_repos + (user as any).total_private_repos 
+        : user.public_repos;
+
       return {
-        repos: user.public_repos,
+        repos: totalRepos,
         commits: commitCount,
         trackedRepos: [],
       };

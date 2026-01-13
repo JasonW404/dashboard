@@ -8,25 +8,44 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useDashboardStore } from "@/lib/store";
 import { toast } from "sonner";
+import { getSettings, updateSettings } from "@/actions/settings";
 
 export default function SettingsPage() {
-  const { settings, updateSettings } = useDashboardStore();
+  const { settings: storeSettings, updateSettings: updateStoreSettings } = useDashboardStore();
   const [username, setUsername] = useState("");
   const [repoInput, setRepoInput] = useState("");
   const [trackedRepos, setTrackedRepos] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Load initial state from store
+  // Load initial state from server
   useEffect(() => {
-    setUsername(settings.githubUsername);
-    setTrackedRepos(settings.trackedRepos);
-  }, [settings]);
+    const fetchSettings = async () => {
+      try {
+        const data = await getSettings();
+        setUsername(data.githubUsername);
+        setTrackedRepos(data.trackedRepos);
+        updateStoreSettings(data);
+      } catch (error) {
+        toast.error("Failed to load settings");
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handleSaveProfile = () => {
-    updateSettings({ githubUsername: username });
-    toast.success("Profile settings saved");
+    fetchSettings();
+  }, [updateStoreSettings]);
+
+  const handleSaveProfile = async () => {
+    try {
+      const updated = await updateSettings({ githubUsername: username });
+      updateStoreSettings(updated);
+      toast.success("Profile settings saved");
+    } catch (error) {
+      toast.error("Failed to save profile settings");
+    }
   };
 
-  const handleAddRepo = (e: React.FormEvent) => {
+  const handleAddRepo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!repoInput.trim()) return;
 
@@ -41,18 +60,42 @@ export default function SettingsPage() {
     }
 
     const newRepos = [...trackedRepos, repoInput];
-    setTrackedRepos(newRepos);
-    updateSettings({ trackedRepos: newRepos });
-    setRepoInput("");
-    toast.success("Repository added");
+    
+    try {
+      const updated = await updateSettings({ trackedRepos: newRepos });
+      setTrackedRepos(updated.trackedRepos);
+      updateStoreSettings(updated);
+      setRepoInput("");
+      toast.success("Repository added");
+    } catch (error) {
+      toast.error("Failed to add repository");
+    }
   };
 
-  const handleRemoveRepo = (repoToRemove: string) => {
+  const handleRemoveRepo = async (repoToRemove: string) => {
     const newRepos = trackedRepos.filter(repo => repo !== repoToRemove);
-    setTrackedRepos(newRepos);
-    updateSettings({ trackedRepos: newRepos });
-    toast.success("Repository removed");
+    
+    try {
+      const updated = await updateSettings({ trackedRepos: newRepos });
+      setTrackedRepos(updated.trackedRepos);
+      updateStoreSettings(updated);
+      toast.success("Repository removed");
+    } catch (error) {
+      toast.error("Failed to remove repository");
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 animate-pulse">
+        <div className="h-8 w-48 bg-muted rounded"></div>
+        <div className="grid gap-8">
+          <div className="h-48 bg-muted rounded-lg"></div>
+          <div className="h-96 bg-muted rounded-lg"></div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

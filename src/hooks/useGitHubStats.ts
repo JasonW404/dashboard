@@ -1,26 +1,39 @@
 import useSWR from 'swr';
-import { GitHubService } from '@/lib/github/service';
 import { useDashboardStore } from '@/lib/store';
+import { GitHubStats, TrackedRepo } from '@/types';
 
-const githubService = new GitHubService();
+async function fetcher(url: string) {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error('Failed to fetch data');
+  }
+  return res.json();
+}
 
 export function useGitHubStats() {
   const { settings } = useDashboardStore();
 
-  const { data: userStats, isLoading: isLoadingUser } = useSWR(
-    settings.githubUsername ? `github/user/${settings.githubUsername}` : null,
-    () => githubService.getUserStats(settings.githubUsername)
+  const { data: userStats, isLoading: isLoadingUser } = useSWR<GitHubStats>(
+    settings.githubUsername ? `/api/github/user?username=${settings.githubUsername}` : null,
+    fetcher
   );
 
-  const { data: repoStats, isLoading: isLoadingRepos } = useSWR(
-    settings.trackedRepos.length > 0 ? `github/repos/${settings.trackedRepos.join(',')}` : null,
+  const { data: repoStats, isLoading: isLoadingRepos } = useSWR<TrackedRepo[]>(
+    settings.trackedRepos.length > 0 ? `/api/github/repo?repos=${settings.trackedRepos.join(',')}` : null,
     async () => {
-      const promises = settings.trackedRepos.map((repoString) => {
+      const promises = settings.trackedRepos.map(async (repoString) => {
         const [owner, repo] = repoString.split('/');
-        return githubService.getRepoStats(owner, repo);
+        try {
+          const res = await fetch(`/api/github/repo?owner=${owner}&repo=${repo}`);
+          if (!res.ok) return null;
+          return await res.json();
+        } catch (error) {
+          console.error(`Error fetching repo stats for ${repoString}:`, error);
+          return null;
+        }
       });
       const results = await Promise.all(promises);
-      return results.filter((r): r is NonNullable<typeof r> => r !== null);
+      return results.filter((r): r is TrackedRepo => r !== null);
     }
   );
 

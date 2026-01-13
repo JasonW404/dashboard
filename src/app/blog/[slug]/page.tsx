@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { getPostData } from "@/lib/blog/service";
+import { getPostBySlug } from "@/actions/posts";
+import { marked } from 'marked';
 
 // Correct type definition for Next.js 15 App Router dynamic parameters
 type Props = {
@@ -13,11 +14,20 @@ type Props = {
 
 export default async function BlogPost({ params }: Props) {
   const resolvedParams = await params;
-  const post = await getPostData(resolvedParams.slug);
+  const postData = await getPostBySlug(resolvedParams.slug);
 
-  if (!post) {
+  if (!postData) {
     notFound();
   }
+
+  // Convert markdown to HTML (marked is synchronous by default unless configured otherwise)
+  const htmlContent = await marked(postData.content);
+
+  const post = {
+    ...postData,
+    date: postData.date,
+    content: htmlContent
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
