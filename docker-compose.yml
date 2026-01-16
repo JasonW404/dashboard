@@ -1,7 +1,24 @@
 services:
+  dashboard:
+    image: jasonw404/dashboard:latest
+    container_name: jasonw404-dashboard
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_USER=jason
+      - DATABASE_PASSWORD=password123
+      - DATABASE_NAME=jason_dashboard
+    depends_on:
+      - postgres
+      
   postgres:
     image: postgres:15-alpine
-    container_name: jason-dashboard-db
+    container_name: jasonw404-postgres-db
     environment:
       POSTGRES_USER: jason
       POSTGRES_PASSWORD: password123
@@ -9,7 +26,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - dashboard-db-data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  dashboard-db-data:
