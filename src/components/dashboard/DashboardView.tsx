@@ -192,7 +192,7 @@ export default function DashboardView({ initialPosts, initialSettings, initialTo
       </motion.div>
 
       {/* Stats Blocks - Grid Row Below Graph */}
-      <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <motion.div variants={item} className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="flex-1 hover:shadow-lg hover:scale-[1.02] transition-all duration-200 cursor-default">
           <CardContent className="flex flex-row items-center justify-between h-full">
             <div className="flex flex-row items-center gap-4">
