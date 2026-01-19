@@ -7,6 +7,8 @@ import Link from "next/link";
 import { getPostBySlug } from "@/actions/posts";
 import { marked } from 'marked';
 
+export const dynamic = 'force-dynamic';
+
 // Correct type definition for Next.js 15 App Router dynamic parameters
 type Props = {
   params: Promise<{ slug: string }>;

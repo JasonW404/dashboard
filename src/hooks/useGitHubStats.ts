@@ -1,6 +1,6 @@
 import useSWR from 'swr';
 import { useDashboardStore } from '@/lib/store';
-import { GitHubStats, TrackedRepo } from '@/types';
+import { GitHubStats, TrackedRepo, DashboardSettings } from '@/types';
 
 async function fetcher(url: string) {
   const res = await fetch(url);
@@ -10,8 +10,9 @@ async function fetcher(url: string) {
   return res.json();
 }
 
-export function useGitHubStats() {
-  const { settings } = useDashboardStore();
+export function useGitHubStats(externalSettings?: DashboardSettings) {
+  const { settings: storeSettings } = useDashboardStore();
+  const settings = externalSettings || storeSettings;
 
   const { data: userStats, isLoading: isLoadingUser } = useSWR<GitHubStats>(
     settings.githubUsername ? `/api/github/user?username=${settings.githubUsername}` : null,

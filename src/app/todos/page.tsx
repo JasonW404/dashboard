@@ -3,6 +3,8 @@ import { getTodos } from "@/actions/todos";
 import { TodoList } from "@/components/dashboard/TodoList";
 import { TodoItem } from "@/types";
 
+export const dynamic = 'force-dynamic';
+
 export default async function TodosPage() {
   const todos = await getTodos();
 

@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { getPosts } from "@/actions/posts";
 import { BlogPost } from "@/types";
 
+export const dynamic = 'force-dynamic';
+
 export default async function BlogPage() {
   // Fetch posts directly from DB via Server Action
   const postsData = await getPosts();

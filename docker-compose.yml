@@ -6,27 +6,33 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"
+      - "3001:3000"
     environment:
-      - DATABASE_HOST=postgres
-      - DATABASE_PORT=5432
-      - DATABASE_USER=jason
-      - DATABASE_PASSWORD=password123
-      - DATABASE_NAME=jason_dashboard
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - DB_SKIP_MIGRATIONS=false
+    volumes:
+      - ./.env.local:/app/.env.local
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
       
   postgres:
     image: postgres:15-alpine
     container_name: jasonw404-postgres-db
     environment:
-      POSTGRES_USER: jason
-      POSTGRES_PASSWORD: password123
-      POSTGRES_DB: jason_dashboard
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
     ports:
       - "5432:5432"
     volumes:
       - dashboard-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 volumes:
   dashboard-db-data:
