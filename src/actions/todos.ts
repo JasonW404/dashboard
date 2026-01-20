@@ -13,16 +13,16 @@ export async function createTodo(
   content: string, 
   priority: 'low' | 'medium' | 'high' = 'medium',
   category: 'short-term' | 'future-aims' = 'short-term',
-  description?: string,
-  dueDate?: Date
+  description?: string | null,
+  dueDate?: Date | null
 ) {
   const todo = await prisma.todo.create({
     data: {
       content,
       priority,
       category,
-      description,
-      dueDate,
+      description: description || undefined,
+      dueDate: dueDate || undefined,
     },
   });
   revalidatePath('/todos');
@@ -52,11 +52,15 @@ export async function updateTodo(
 }
 
 export async function toggleTodo(id: string, completed: boolean) {
+  // Get current todo to preserve its status if it's in-progress
+  const currentTodo = await prisma.todo.findUnique({ where: { id } });
+  
   const todo = await prisma.todo.update({
     where: { id },
     data: { 
       completed,
-      status: completed ? 'done' : 'todo'
+      // Only change status to done/todo if not already in-progress
+      status: completed ? 'done' : (currentTodo?.status === 'in-progress' ? 'in-progress' : 'todo')
     },
   });
   revalidatePath('/todos');

@@ -46,10 +46,10 @@ export function TodoList({ initialTodos }: TodoListProps) {
       mutate([...(todos || []), tempTodo], false);
       setNewTodo("");
 
-      await createTodo(newTodo);
+      await createTodo(newTodo, 'medium', 'short-term');
       mutate(); // Revalidate from server
       toast.success("Task added");
-    } catch (error) {
+    } catch {
       toast.error("Failed to add task");
       mutate(); // Revert to server data
     }
