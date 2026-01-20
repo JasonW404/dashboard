@@ -36,6 +36,8 @@ export function TodoList({ initialTodos }: TodoListProps) {
       content: newTodo,
       completed: false,
       priority: 'medium',
+      category: 'short-term',
+      status: 'todo',
       createdAt: new Date().toISOString(),
     };
 

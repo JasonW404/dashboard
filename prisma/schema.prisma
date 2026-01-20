@@ -22,12 +22,16 @@ model Settings {
 }
 
 model Todo {
-  id        String   @id @default(uuid())
-  content   String
-  completed Boolean  @default(false)
-  priority  String   @default("medium") // low, medium, high
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  content     String
+  completed   Boolean  @default(false)
+  priority    String   @default("medium") // low, medium, high
+  category    String   @default("short-term") // short-term, future-aims
+  description String?  // Optional detailed description
+  dueDate     DateTime? // Optional due date
+  status      String   @default("todo") // todo, in-progress, done
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model Post {

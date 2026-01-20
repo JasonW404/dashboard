@@ -19,7 +19,12 @@ export interface TodoItem {
   content: string;
   completed: boolean;
   priority: 'low' | 'medium' | 'high';
+  category: 'short-term' | 'future-aims';
+  description?: string;
+  dueDate?: string;
+  status: 'todo' | 'in-progress' | 'done';
   createdAt: string;
+  updatedAt?: string;
 }
 
 export interface BlogPost {

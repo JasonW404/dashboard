@@ -1,7 +1,7 @@
-import { format } from "date-fns";
 import { getTodos } from "@/actions/todos";
-import { TodoList } from "@/components/dashboard/TodoList";
 import { TodoItem } from "@/types";
+import { TodosClient } from "@/components/dashboard/TodosClient";
+import { Todo } from "@prisma/client";
 
 export const dynamic = 'force-dynamic';
 
@@ -9,24 +9,18 @@ export default async function TodosPage() {
   const todos = await getTodos();
 
   // Map Prisma Todo to our TodoItem type
-  const typedTodos: TodoItem[] = todos.map((todo: any) => ({
+  const typedTodos: TodoItem[] = todos.map((todo: Todo) => ({
     id: todo.id,
     content: todo.content,
     completed: todo.completed,
     priority: todo.priority as 'low' | 'medium' | 'high',
+    category: (todo.category || 'short-term') as 'short-term' | 'future-aims',
+    description: todo.description || undefined,
+    dueDate: todo.dueDate?.toISOString(),
+    status: (todo.status || 'todo') as 'todo' | 'in-progress' | 'done',
     createdAt: todo.createdAt.toISOString(),
+    updatedAt: todo.updatedAt?.toISOString(),
   }));
 
-  return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Daily Tasks</h1>
-        <p className="text-muted-foreground">
-          {format(new Date(), "EEEE, MMMM do, yyyy")}
-        </p>
-      </div>
-
-      <TodoList initialTodos={typedTodos} />
-    </div>
-  );
+  return <TodosClient initialTodos={typedTodos} />;
 }
