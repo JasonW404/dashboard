@@ -8,11 +8,9 @@ services:
     ports:
       - "3001:3000"
     environment:
-      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@postgres:5432/${DB_NAME}?schema=public
+      - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@{DB_DOMAIN}:5432/${DB_NAME}?schema=public
       - GITHUB_TOKEN=${GITHUB_TOKEN}
       - DB_SKIP_MIGRATIONS=false
-    volumes:
-      - ./.env.local:/app/.env.local
     depends_on:
       postgres:
         condition: service_healthy

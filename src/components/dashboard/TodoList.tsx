@@ -9,16 +9,22 @@ import { cn } from "@/lib/utils";
 import { createTodo, toggleTodo, deleteTodo } from "@/actions/todos";
 import { TodoItem } from "@/types";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import useSWR from "swr";
 
 interface TodoListProps {
   initialTodos: TodoItem[];
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export function TodoList({ initialTodos }: TodoListProps) {
   const [newTodo, setNewTodo] = useState("");
-  const [todos, setTodos] = useState<TodoItem[]>(initialTodos);
-  const router = useRouter();
+  const { data: todos, mutate } = useSWR<TodoItem[]>('/api/todos', fetcher, {
+    fallbackData: initialTodos,
+    refreshInterval: 5000, // Poll every 5 seconds
+    revalidateOnFocus: true,
+    dedupingInterval: 4000,
+  });
 
   const handleAddTodo = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,46 +41,50 @@ export function TodoList({ initialTodos }: TodoListProps) {
 
     try {
       // Optimistic update
-      setTodos((prev) => [...prev, tempTodo]);
+      mutate([...(todos || []), tempTodo], false);
       setNewTodo("");
-      
+
       await createTodo(newTodo);
-      router.refresh(); // Refresh server data
+      mutate(); // Revalidate from server
       toast.success("Task added");
     } catch (error) {
       toast.error("Failed to add task");
-      setTodos(initialTodos); // Revert on error
+      mutate(); // Revert to server data
     }
   };
 
   const handleToggleTodo = async (id: string, currentStatus: boolean) => {
     try {
       // Optimistic update
-      setTodos((prev) => 
-        prev.map(t => t.id === id ? { ...t, completed: !currentStatus } : t)
+      const optimisticTodos = todos?.map(t =>
+        t.id === id ? { ...t, completed: !currentStatus } : t
       );
+      mutate(optimisticTodos, false);
+
       await toggleTodo(id, !currentStatus);
-      router.refresh();
+      mutate(); // Revalidate from server
     } catch (error) {
       toast.error("Failed to update task");
-      setTodos(initialTodos); // Revert
+      mutate(); // Revert to server data
     }
   };
 
   const handleDeleteTodo = async (id: string) => {
     try {
       // Optimistic update
-      setTodos((prev) => prev.filter(t => t.id !== id));
+      const optimisticTodos = todos?.filter(t => t.id !== id);
+      mutate(optimisticTodos, false);
+
       await deleteTodo(id);
       toast.success("Task deleted");
-      router.refresh();
+      mutate(); // Revalidate from server
     } catch (error) {
       toast.error("Failed to delete task");
-      setTodos(initialTodos); // Revert
+      mutate(); // Revert to server data
     }
   };
 
-  const sortedTodos = [...todos].sort((a, b) => {
+  const sortedTodos = [...(todos || [])].sort((a, b) => {
     if (a.completed === b.completed) {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     }
@@ -137,7 +147,7 @@ export function TodoList({ initialTodos }: TodoListProps) {
               </Button>
             </div>
           ))}
-          {todos.length === 0 && (
+          {todos && todos.length === 0 && (
             <div className="text-center py-12 text-muted-foreground">
               No tasks for today. Enjoy your day!
             </div>

@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import DashboardLayout from '@/components/layout/DashboardLayout';
-import { ThemeProvider } from "@/components/theme-provider"
+import { ThemeProvider } from "@/components/theme-provider";
+import { SWRConfig } from 'swr';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,14 +30,22 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
+        <SWRConfig
+          value={{
+            refreshWhenHidden: false,
+            revalidateOnFocus: true,
+            dedupingInterval: 4000,
+          }}
         >
-          <DashboardLayout>{children}</DashboardLayout>
-        </ThemeProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            <DashboardLayout>{children}</DashboardLayout>
+          </ThemeProvider>
+        </SWRConfig>
       </body>
     </html>
   );

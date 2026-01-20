@@ -8,18 +8,33 @@ import { TodoItem } from "@/types";
 import { toggleTodo } from "@/actions/todos";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { useState } from "react";
+import useSWR from "swr";
 
 interface DashboardTodosProps {
     initialTodos: TodoItem[];
 }
 
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
+
 export default function DashboardTodos({ initialTodos }: DashboardTodosProps) {
-    // We can use local state for optimistic UI if we want, or just rely on server action revalidation
-    const pendingTodos = initialTodos.filter(t => !t.completed).slice(0, 5);
+    const { data: todos, mutate } = useSWR<TodoItem[]>('/api/todos', fetcher, {
+        fallbackData: initialTodos,
+        refreshInterval: 5000, // Poll every 5 seconds
+        revalidateOnFocus: true,
+        dedupingInterval: 4000,
+    });
+
+    const pendingTodos = (todos || []).filter(t => !t.completed).slice(0, 5);
 
     const handleToggleTodo = async (id: string, currentStatus: boolean) => {
+        // Optimistic update
+        const optimisticTodos = todos?.map(t =>
+            t.id === id ? { ...t, completed: !currentStatus } : t
+        );
+        mutate(optimisticTodos, false);
+
         await toggleTodo(id, !currentStatus);
+        mutate(); // Revalidate from server
     };
 
     return (
