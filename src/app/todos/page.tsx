@@ -2,6 +2,7 @@ import { format } from "date-fns";
 import { getTodos } from "@/actions/todos";
 import { TodoList } from "@/components/dashboard/TodoList";
 import { TodoItem } from "@/types";
+import { MotionContainer, MotionItem } from "@/components/layout/MotionWrapper";
 
 export const dynamic = 'force-dynamic';
 
@@ -18,15 +19,17 @@ export default async function TodosPage() {
   }));
 
   return (
-    <div className="space-y-8">
-      <div>
+    <MotionContainer className="space-y-8">
+      <MotionItem>
         <h1 className="text-3xl font-bold tracking-tight">Daily Tasks</h1>
         <p className="text-muted-foreground">
           {format(new Date(), "EEEE, MMMM do, yyyy")}
         </p>
-      </div>
+      </MotionItem>
 
-      <TodoList initialTodos={typedTodos} />
-    </div>
+      <MotionItem>
+        <TodoList initialTodos={typedTodos} />
+      </MotionItem>
+    </MotionContainer>
   );
 }
