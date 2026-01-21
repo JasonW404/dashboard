@@ -30,7 +30,7 @@ export async function initializeDatabase(prisma: PrismaClient, seed = false): Pr
     await prisma.$connect();
     log('Database connection established.');
 
-    const requiredTables = ['Settings', 'Todo', 'Post'];
+    const requiredTables = ['Settings', 'Objective', 'KeyResult', 'Post'];
     const existingTables = await checkExistingTables(prisma);
 
     log(`Found tables: ${existingTables.join(', ') || 'none'}`);
@@ -71,7 +71,8 @@ async function checkExistingTables(prisma: PrismaClient): Promise<string[]> {
 
   const tableChecks = [
     { name: 'Settings', query: () => prisma.settings.count() },
-    { name: 'Todo', query: () => prisma.todo.count() },
+    { name: 'Objective', query: () => prisma.objective.count() },
+    { name: 'KeyResult', query: () => prisma.keyResult.count() },
     { name: 'Post', query: () => prisma.post.count() },
   ];
 
@@ -131,20 +132,45 @@ async function seedDatabase(prisma: PrismaClient): Promise<void> {
     });
     log(`Settings ${settings.id ? 'updated' : 'created'}.`);
 
-    const todoCount = await prisma.todo.count();
-    if (todoCount === 0) {
-      const todos = [
-        { content: 'Star Jason Dashboard on GitHub', priority: 'high', completed: false },
-        { content: 'Deploy to Vercel', priority: 'medium', completed: false },
-        { content: 'Write first blog post', priority: 'medium', completed: true },
+    const objectiveCount = await prisma.objective.count();
+    if (objectiveCount === 0) {
+      const objectives = [
+        {
+          title: 'Ship dashboard MVP',
+          deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+          keyResults: [
+            { title: 'Design navigation and layout', priority: 'high' as const },
+            { title: 'Implement OKR CRUD flows', priority: 'medium' as const },
+            { title: 'Polish landing dashboard copy', priority: 'medium' as const },
+          ],
+        },
+        {
+          title: 'Improve developer experience',
+          deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          keyResults: [
+            { title: 'Document API routes', priority: 'low' as const },
+            { title: 'Add seed data for demos', priority: 'medium' as const },
+          ],
+        },
       ];
 
-      for (const todo of todos) {
-        await prisma.todo.create({ data: todo });
+      for (const objective of objectives) {
+        await prisma.objective.create({
+          data: {
+            title: objective.title,
+            deadline: objective.deadline,
+            keyResults: {
+              create: objective.keyResults.map((kr) => ({
+                title: kr.title,
+                priority: kr.priority,
+              })),
+            },
+          },
+        });
       }
-      log(`Created ${todos.length} todos.`);
+      log(`Created ${objectives.length} objectives with key results.`);
     } else {
-      log(`Skipping todo seeding (already exists: ${todoCount} todos).`);
+      log(`Skipping objective seed (already exists: ${objectiveCount} objectives).`);
     }
 
     const postCount = await prisma.post.count();

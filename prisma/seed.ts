@@ -16,17 +16,47 @@ async function main() {
   });
   console.log('Created settings:', settings);
 
-  // Seed Todos
-  const todos = [
-    { content: 'Star Jason Dashboard on GitHub', priority: 'high', completed: false },
-    { content: 'Deploy to Vercel', priority: 'medium', completed: false },
-    { content: 'Write first blog post', priority: 'medium', completed: true },
-  ];
+  // Seed Objectives and Key Results (if empty)
+  const objectiveCount = await prisma.objective.count();
+  if (objectiveCount === 0) {
+    const objectives = [
+      {
+        title: 'Ship dashboard MVP',
+        deadline: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
+        keyResults: [
+          { title: 'Design navigation and layout', priority: 'high' as const },
+          { title: 'Implement OKR CRUD flows', priority: 'medium' as const },
+          { title: 'Polish landing dashboard copy', priority: 'medium' as const },
+        ],
+      },
+      {
+        title: 'Improve developer experience',
+        deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        keyResults: [
+          { title: 'Document API routes', priority: 'low' as const },
+          { title: 'Add seed data for demos', priority: 'medium' as const },
+        ],
+      },
+    ];
 
-  for (const todo of todos) {
-    await prisma.todo.create({ data: todo });
+    for (const objective of objectives) {
+      await prisma.objective.create({
+        data: {
+          title: objective.title,
+          deadline: objective.deadline,
+          keyResults: {
+            create: objective.keyResults.map((kr) => ({
+              title: kr.title,
+              priority: kr.priority,
+            })),
+          },
+        },
+      });
+    }
+    console.log(`Created ${objectives.length} objectives with key results`);
+  } else {
+    console.log(`Skipping objectives seed (already have ${objectiveCount})`);
   }
-  console.log(`Created ${todos.length} todos`);
 
   // Seed Blog Posts
   const posts = [
