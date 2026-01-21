@@ -49,19 +49,19 @@ export default function DashboardTodos({ initialObjectives }: DashboardTodosProp
             transition={{ delay: 0.2 }}
         >
             <Card className="h-full hover:shadow-md transition-shadow duration-200 flex flex-col">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                    <CardTitle>Focus & Vision</CardTitle>
+                <CardHeader className="flex flex-row items-center justify-between">
+                    <CardTitle>What's next?</CardTitle>
                     <Link href="/todos">
                         <Button variant="ghost" size="sm" className="gap-2 group">
                             Plan <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </Link>
                 </CardHeader>
-                <CardContent className="space-y-6 flex-1 overflow-y-auto">
+                <CardContent className="space-y-4 flex-1 overflow-y-auto">
 
                     {/* Short Term: Top KRs */}
                     <div className="space-y-3">
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Top Priorities (Short Term)</h4>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Top Priorities</h4>
                         {topActiveKRs.length > 0 ? (
                             topActiveKRs.map((kr) => (
                                 <div
@@ -87,7 +87,7 @@ export default function DashboardTodos({ initialObjectives }: DashboardTodosProp
 
                     {/* Long Term: Objectives */}
                     <div className="space-y-3">
-                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">North Stars (Long Term)</h4>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">In the future</h4>
                         {(objectives || []).length > 0 ? (
                             (objectives || []).map(obj => {
                                 const total = obj.keyResults.length;

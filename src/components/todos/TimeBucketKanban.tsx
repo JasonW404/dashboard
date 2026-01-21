@@ -88,7 +88,7 @@ export function TimeBucketKanban({ objectives }: TimeBucketKanbanProps) {
     };
 
     const BucketColumn = ({ title, items, colorClass }: { title: string, items: BucketItem[], colorClass: string }) => (
-        <div className="flex flex-col gap-3 min-w-75 flex-1 max-h-full">
+        <div className="flex flex-col gap-3 min-w-0 md:min-w-50 flex-1 max-h-full">
             <div className={cn("px-4 py-3 rounded-lg font-semibold text-sm flex justify-between items-center shadow-sm shrink-0", colorClass)}>
                 <span>{title}</span>
                 <Badge variant="secondary" className="bg-white/20 text-inherit hover:bg-white/30">{items.length}</Badge>
@@ -136,8 +136,8 @@ export function TimeBucketKanban({ objectives }: TimeBucketKanbanProps) {
     );
 
     return (
-        <div className="overflow-x-auto overflow-y-hidden pb-4 w-full h-[calc(100vh-14rem)]">
-            <div className="flex gap-6 w-full min-w-max px-1 h-full items-start">
+        <div className="w-full h-auto md:h-[calc(100vh-14rem)] overflow-y-auto md:overflow-y-hidden pb-4">
+            <div className="flex flex-col md:flex-row gap-4 w-full px-1 h-full">
                 <BucketColumn title="Overdue" items={buckets.overdue} colorClass="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300" />
                 <BucketColumn title="Focus (48h)" items={buckets.upcoming} colorClass="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300" />
                 <BucketColumn title="This Week" items={buckets.thisWeek} colorClass="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300" />

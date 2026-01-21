@@ -52,8 +52,25 @@ export default function GitHubView({ initialSettings }: GitHubViewProps) {
     // Fix hydration mismatch by only rendering after mount
     const [mounted, setMounted] = useState(false);
 
+    const [blockSize, setBlockSize] = useState(12);
+
     useEffect(() => {
         setMounted(true);
+        const handleResize = () => {
+            if (window.innerWidth < 500) {
+                setBlockSize(6);
+            } else if (window.innerWidth < 768) {
+                setBlockSize(8);
+            } else if (window.innerWidth < 1024) {
+                setBlockSize(10);
+            } else {
+                setBlockSize(12);
+            }
+        };
+
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const totalStars = repoStats?.reduce((acc, repo) => acc + repo.stars, 0) || 0;
@@ -78,7 +95,7 @@ export default function GitHubView({ initialSettings }: GitHubViewProps) {
         return (
             <div className="space-y-8 animate-pulse">
                 <div className="h-8 w-48 bg-muted rounded"></div>
-                <div className="w-full h-[200px] bg-muted rounded-lg"></div>
+                <div className="w-full h-50 bg-muted rounded-lg"></div>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div className="h-32 bg-muted rounded-lg"></div>
                     <div className="h-32 bg-muted rounded-lg"></div>
@@ -108,19 +125,22 @@ export default function GitHubView({ initialSettings }: GitHubViewProps) {
             className="space-y-6 w-full"
         >
             <h2 className="text-2xl font-bold">GitHub Overview</h2>
-            <div className="github-calendar flex lg:flex-row gap-6">
-                <motion.div variants={item} className="lg:col-span-2 w-full">
-                    <Card className="h-full hover:shadow-lg transition-shadow duration-200 flex flex-col">
-                        <CardContent className="flex-1 flex justify-center items-center py-4 overflow-hidden min-h-[160px]">
+            <div className="github-calendar flex flex-col lg:flex-row gap-6">
+                <motion.div variants={item} className="w-full">
+                    <Card className="h-full hover:shadow-lg transition-shadow duration-200 flex flex-col py-4 px-2">
+                        <CardContent className="flex-1 flex justify-center items-center overflow-hidden px-2">
                             <div className="w-full h-full flex items-center justify-center overflow-x-auto custom-scrollbar">
                                 <div className="min-w-fit">
                                     {isLoadingCalendar ? (
-                                        <div className="flex items-center justify-center h-[128px] w-full text-muted-foreground">
+                                        <div className="flex items-center justify-center h-32 w-full text-muted-foreground">
                                             Loading calendar...
                                         </div>
                                     ) : calendarData?.contributions ? (
                                         <ActivityCalendar
                                             data={calendarData.contributions}
+                                            blockSize={blockSize}
+                                            blockMargin={2}
+                                            fontSize={12}
                                             theme={{
                                                 light: [
                                                     '#ebedf0', // Empty
@@ -160,68 +180,75 @@ export default function GitHubView({ initialSettings }: GitHubViewProps) {
                 </motion.div>
 
                 {/* Stats Blocks - Single card vertical */}
-                <motion.div variants={item} className="lg:col-span-1">
-                    <Card className="h-full hover:shadow-lg transition-shadow duration-200">
-                        <CardContent className="flex flex-col justify-center items-start h-full px-6 gap-1 text-right font-medium">
-                                <div className="text-2xl font-bold  leading-none">
+                <motion.div variants={item} className="">
+                    <Card className="h-full hover:shadow-lg transition-shadow duration-200 py-2">
+                        <CardContent className="flex flex-row lg:flex-col sm:flex-row justify-center items-center lg:items-start sm:items-center h-full px-6 py-4 gap-2 sm:gap-2 lg:gap-4 text-center lg:text-right font-medium">
+                            <div className="flex flex-col items-center lg:items-end w-full">
+                                <div className="text-2xl font-bold leading-none">
                                     {isLoading ? "..." : totalStars}
                                 </div>
-                                <div className="mb-2">Stars</div>
+                                <div className="text-sm">Stars</div>
+                            </div>
 
-                                <div className="text-2xl font-bold  leading-none">
+                            <div className="flex flex-col items-center lg:items-end w-full">
+                                <div className="text-2xl font-bold leading-none">
                                     {isLoading ? "..." : userStats?.repos}
                                 </div>
-                                <div className="mb-2">Repos</div>
+                                <div className="text-sm">Repos</div>
+                            </div>
 
-                                <div className="text-2xl font-bold  leading-none">
+                            <div className="flex flex-col items-center lg:items-end w-full">
+                                <div className="text-2xl font-bold leading-none">
                                     {isLoadingCalendar ? "..." : calendarData?.total || userStats?.commits || 0}
                                 </div>
-                                <div className="">Contributions</div>
-
+                                <div className="text-sm">Contributions</div>
+                            </div>
                         </CardContent>
                     </Card>
                 </motion.div>
-            </div>
+            </div >
 
             {/* Tracked Repositories */}
-            {repoStats && repoStats.length > 0 && (
-                <motion.div variants={item} className="space-y-4">
-                    <div className="flex flex-col gap-4">
-                        {repoStats?.map((repo) => (
-                            <Card key={`${repo.owner}/${repo.name}`} className="hover:shadow-lg hover:-translate-y-1 transition-all duration-200 w-full">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-base font-medium">
-                                        <a
-                                            href={repo.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="hover:text-primary transition-colors flex items-center group"
-                                        >
-                                            {repo.owner}/{repo.name}
-                                            <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
-                                        </a>
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="flex gap-4 text-sm text-muted-foreground">
-                                        <div className="flex items-center gap-1">
-                                            <Star className="h-4 w-4 text-yellow-500" />
-                                            {repo.stars}
+            {
+                repoStats && repoStats.length > 0 && (
+                    <motion.div variants={item} className="space-y-4">
+                        <div className="flex flex-col gap-4">
+                            {repoStats?.map((repo) => (
+                                <Card key={`${repo.owner}/${repo.name}`} className="hover:shadow-lg hover:-translate-y-1 transition-all duration-200 w-full">
+                                    <CardHeader className="pb-2">
+                                        <CardTitle className="text-base font-medium">
+                                            <a
+                                                href={repo.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="hover:text-primary transition-colors flex items-center group"
+                                            >
+                                                {repo.owner}/{repo.name}
+                                                <ArrowRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200" />
+                                            </a>
+                                        </CardTitle>
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="flex gap-4 text-sm text-muted-foreground">
+                                            <div className="flex items-center gap-1">
+                                                <Star className="h-4 w-4 text-yellow-500" />
+                                                {repo.stars}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <GitFork className="h-4 w-4" />
+                                                {repo.forks}
+                                            </div>
+                                            <div className="flex items-center gap-1">
+                                                <AlertCircle className="h-4 w-4" />
+                                                {repo.openIssues}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <GitFork className="h-4 w-4" />
-                                            {repo.forks}
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <AlertCircle className="h-4 w-4" />
-                                            {repo.openIssues}
-                                        </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
-                </motion.div>)}
-        </motion.div>
+                                    </CardContent>
+                                </Card>
+                            ))}
+                        </div>
+                    </motion.div>)
+            }
+        </motion.div >
     );
 }
