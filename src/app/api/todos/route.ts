@@ -1,14 +1,14 @@
 import { NextResponse } from 'next/server';
-import { getTodos } from '@/actions/todos';
+import { getObjectives } from '@/actions/okr';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
     try {
-        const todos = await getTodos();
-        return NextResponse.json(todos);
+        const objectives = await getObjectives();
+        return NextResponse.json(objectives);
     } catch (error) {
-        console.error('Failed to fetch todos:', error);
-        return NextResponse.json({ error: 'Failed to fetch todos' }, { status: 500 });
+        console.error('Failed to fetch objectives:', error);
+        return NextResponse.json({ error: 'Failed to fetch objectives' }, { status: 500 });
     }
 }

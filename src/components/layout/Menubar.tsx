@@ -31,7 +31,7 @@ export function Menubar() {
             <div className="h-6 w-6 rounded-md bg-primary shadow-lg shadow-primary/20" />
             <span className="text-lg font-bold tracking-tight hidden sm:inline-block">Dashboard</span>
           </Link>
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-4">
             {navItems.map(({ href, label, icon: Icon }) => (
               <Link key={href} href={href}>
                 <Button

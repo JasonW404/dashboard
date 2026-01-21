@@ -2,39 +2,44 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Circle, CheckCircle, ArrowRight } from "lucide-react";
+import { Circle, CheckCircle, ArrowRight, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { TodoItem } from "@/types";
-import { toggleTodo } from "@/actions/todos";
+import { Objective, KeyResult } from "@/types";
+import { toggleKeyResult } from "@/actions/okr";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import useSWR from "swr";
+import { Badge } from "@/components/ui/badge";
 
 interface DashboardTodosProps {
-    initialTodos: TodoItem[];
+    initialObjectives: Objective[];
 }
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function DashboardTodos({ initialTodos }: DashboardTodosProps) {
-    const { data: todos, mutate } = useSWR<TodoItem[]>('/api/todos', fetcher, {
-        fallbackData: initialTodos,
-        refreshInterval: 5000, // Poll every 5 seconds
+export default function DashboardTodos({ initialObjectives }: DashboardTodosProps) {
+    const { data: objectives, mutate } = useSWR<Objective[]>('/api/todos', fetcher, {
+        fallbackData: initialObjectives, // Ensure initialObjectives is passed correctly
+        refreshInterval: 10000,
         revalidateOnFocus: true,
-        dedupingInterval: 4000,
     });
 
-    const pendingTodos = (todos || []).filter(t => !t.completed).slice(0, 5);
+    // 1. Top 3 short-term (active Key Results), sorted by priority (high > medium > low)
+    const allKeyResults = (objectives || []).flatMap(obj => obj.keyResults);
+    const activeKRs = allKeyResults.filter(kr => !kr.completed);
 
-    const handleToggleTodo = async (id: string, currentStatus: boolean) => {
-        // Optimistic update
-        const optimisticTodos = todos?.map(t =>
-            t.id === id ? { ...t, completed: !currentStatus } : t
-        );
-        mutate(optimisticTodos, false);
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
 
-        await toggleTodo(id, !currentStatus);
-        mutate(); // Revalidate from server
+    const topActiveKRs = [...activeKRs].sort((a, b) => {
+        return priorityOrder[b.priority] - priorityOrder[a.priority];
+    }).slice(0, 3);
+
+    // 2. All Long term (Objectives)
+    // We display them below.
+
+    const handleToggleKR = async (id: string) => {
+        await toggleKeyResult(id);
+        mutate();
     };
 
     return (
@@ -43,37 +48,74 @@ export default function DashboardTodos({ initialTodos }: DashboardTodosProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
         >
-            <Card className="h-full hover:shadow-md transition-shadow duration-200">
-                <CardHeader className="flex flex-row items-center justify-between">
-                    <CardTitle>Quick Todos</CardTitle>
+            <Card className="h-full hover:shadow-md transition-shadow duration-200 flex flex-col">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                    <CardTitle>Focus & Vision</CardTitle>
                     <Link href="/todos">
                         <Button variant="ghost" size="sm" className="gap-2 group">
-                            View All <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                            Plan <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
                         </Button>
                     </Link>
                 </CardHeader>
-                <CardContent>
-                    <div className="space-y-2">
-                        {pendingTodos.length > 0 ? (
-                            pendingTodos.map((todo) => (
+                <CardContent className="space-y-6 flex-1 overflow-y-auto">
+
+                    {/* Short Term: Top KRs */}
+                    <div className="space-y-3">
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Top Priorities (Short Term)</h4>
+                        {topActiveKRs.length > 0 ? (
+                            topActiveKRs.map((kr) => (
                                 <div
-                                    key={todo.id}
-                                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group border border-transparent hover:border-border"
-                                    onClick={() => handleToggleTodo(todo.id, todo.completed)}
+                                    key={kr.id}
+                                    className="flex gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors cursor-pointer group"
+                                    onClick={() => handleToggleKR(kr.id)}
                                 >
                                     <button className="text-muted-foreground group-hover:text-primary transition-colors relative">
-                                        <Circle className={cn("h-5 w-5 transition-all", todo.completed ? "scale-0 opacity-0" : "scale-100 opacity-100")} />
-                                        <CheckCircle className={cn("h-5 w-5 absolute inset-0 transition-all text-primary", todo.completed ? "scale-100 opacity-100" : "scale-0 opacity-0")} />
+                                        <Circle className="h-4 w-4" />
                                     </button>
-                                    <span className={cn("text-sm truncate transition-colors", todo.completed ? "text-muted-foreground line-through" : "group-hover:text-foreground")}>{todo.content}</span>
+                                    <div className="flex-1 min-w-0 flex flex-row gap-2">
+                                        <Badge variant={kr.priority === 'high' ? 'destructive' : 'secondary'} className="text-[10px] h-full px-2">
+                                            {kr.priority}
+                                        </Badge>
+                                        <div className="text-sm font-medium truncate leading-tight">{kr.title}</div>
+                                    </div>
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-8 text-muted-foreground text-sm">
-                                No pending tasks. Great job!
-                            </div>
+                            <div className="text-sm text-muted-foreground italic pl-2">No active key results.</div>
                         )}
                     </div>
+
+                    {/* Long Term: Objectives */}
+                    <div className="space-y-3">
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">North Stars (Long Term)</h4>
+                        {(objectives || []).length > 0 ? (
+                            (objectives || []).map(obj => {
+                                const total = obj.keyResults.length;
+                                const completed = obj.keyResults.filter(k => k.completed).length;
+                                const progress = total === 0 ? 0 : Math.round((completed / total) * 100);
+
+                                return (
+                                    <div key={obj.id} className="p-2 border rounded-md">
+
+                                        <div className="flex justify-between items-center mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <Target className="h-4 w-4 text-primary" />
+                                                <span className="text-sm font-medium">{obj.title}</span>
+                                            </div>
+                                            <div className="text-[10px] text-right text-muted-foreground">{progress}%</div>
+                                        </div>
+
+                                        <div className="h-1.5 w-full bg-secondary rounded-full overflow-hidden">
+                                            <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        ) : (
+                            <div className="text-sm text-muted-foreground italic pl-2">No objectives set.</div>
+                        )}
+                    </div>
+
                 </CardContent>
             </Card>
         </motion.div>

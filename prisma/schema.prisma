@@ -21,13 +21,35 @@ model Settings {
   updatedAt      DateTime @updatedAt
 }
 
-model Todo {
-  id        String   @id @default(uuid())
-  content   String
-  completed Boolean  @default(false)
-  priority  String   @default("medium") // low, medium, high
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Objective {
+  id          String      @id @default(uuid())
+  title       String
+  why         String?     @db.Text
+  how         String?     @db.Text
+  what        String?     @db.Text
+  completed   Boolean     @default(false)
+  deadline    DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deletedAt   DateTime?
+  keyResults  KeyResult[]
+}
+
+model KeyResult {
+  id          String    @id @default(uuid())
+  title       String
+  why         String?   @db.Text
+  how         String?   @db.Text
+  what        String?   @db.Text
+  completed   Boolean   @default(false)
+  priority    String    @default("medium") // low, medium, high
+  deadline    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  
+  objectiveId String
+  objective   Objective @relation(fields: [objectiveId], references: [id], onDelete: Cascade)
 }
 
 model Post {

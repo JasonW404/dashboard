@@ -14,12 +14,31 @@ export interface TrackedRepo {
   url: string;
 }
 
-export interface TodoItem {
+export interface Objective {
   id: string;
-  content: string;
+  title: string;
+  why?: string | null;
+  how?: string | null;
+  what?: string | null;
+  completed: boolean;
+  deadline?: Date | string | null;
+  createdAt: Date | string;
+  updatedAt: Date | string;
+  keyResults: KeyResult[];
+}
+
+export interface KeyResult {
+  id: string;
+  title: string;
+  why?: string | null;
+  how?: string | null;
+  what?: string | null;
   completed: boolean;
   priority: 'low' | 'medium' | 'high';
-  createdAt: string;
+  deadline?: Date | string | null;
+  objectiveId: string;
+  createdAt: Date | string;
+  updatedAt: Date | string;
 }
 
 export interface BlogPost {
